@@ -80,33 +80,38 @@ export function RelationshipGraph({ companies, personIndex, onClose, onSelectCom
 
   return (
     <div className="fixed inset-0 z-30 flex flex-col bg-paper">
-      <div className="flex items-center justify-between border-b border-rule px-6 py-4">
+      <div className="flex flex-col gap-3 border-b border-rule px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4">
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-brass">Group corporate record</p>
           <h2 className="font-display text-xl font-semibold text-ledger">Relationship map</h2>
         </div>
-        <div className="flex items-center gap-5">
-          <ul className="flex items-center gap-4 text-xs text-ink/60">
+        <div className="flex items-center justify-between gap-3 sm:gap-5">
+          <ul className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink/60">
             {(Object.keys(ROLE_LABEL) as RoleKind[]).map((role) => (
               <li key={role} className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: ROLE_COLOR[role] }} />
+                <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: ROLE_COLOR[role] }} />
                 {ROLE_LABEL[role]}
               </li>
             ))}
           </ul>
-          <button type="button" onClick={onClose} className="btn-secondary text-xs">
+          <button type="button" onClick={onClose} className="btn-secondary shrink-0 text-xs">
             Close
           </button>
         </div>
       </div>
 
+      <p className="border-b border-rule bg-ledger/[0.03] px-4 py-2 text-center text-xs text-ink/50 sm:hidden">
+        Scroll sideways to see the full diagram →
+      </p>
+
       <div className="flex-1 overflow-auto px-4 py-6">
         <svg
           viewBox={`0 0 ${WIDTH} ${height}`}
-          width="100%"
+          width={WIDTH}
           height={height}
           role="img"
           aria-label="Diagram connecting companies to their directors, PSC, and shareholders"
+          style={{ maxWidth: 'none' }}
         >
           {edges.map((edge, i) => {
             const y1 = companyY.get(edge.companyId)
@@ -147,6 +152,7 @@ export function RelationshipGraph({ companies, personIndex, onClose, onSelectCom
                 >
                   {c.name.length > 34 ? c.name.slice(0, 33) + '…' : c.name}
                 </text>
+                <circle cx={LEFT_X} cy={y} r={14} fill="transparent" />
                 <circle cx={LEFT_X} cy={y} r={5} fill="#16332B" />
                 {i === 0 && (
                   <text x={LEFT_X} y={PAD - 10} textAnchor="middle" className="fill-ink/40 text-[10px] uppercase tracking-wide">
@@ -169,6 +175,7 @@ export function RelationshipGraph({ companies, personIndex, onClose, onSelectCom
                 onClick={() => onSelectPerson(p.person.id)}
                 opacity={active ? 1 : 0.3}
               >
+                <circle cx={RIGHT_X} cy={y} r={14} fill="transparent" />
                 <circle cx={RIGHT_X} cy={y} r={5} fill="#B08D45" />
                 <text
                   x={RIGHT_X + 14}

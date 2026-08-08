@@ -76,32 +76,33 @@ export function RoleEditor({ companyId, role, links, editable, onChange, people,
       ) : (
         <ul className="mt-2 divide-y divide-rule">
           {links.map((link) => (
-            <li key={link.id} className="flex items-center justify-between gap-3 py-1.5">
-              <span className="text-sm">
+            <li key={link.id} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 py-2">
+              <span className="min-w-0 flex-1 text-sm">
                 <button
                   type="button"
                   onClick={() => onSelectPerson(link.person_id)}
-                  className="underline decoration-dotted decoration-ink/30 hover:decoration-ledger hover:text-ledger"
+                  className="break-words text-left underline decoration-dotted decoration-ink/30 hover:decoration-ledger hover:text-ledger"
                 >
                   {link.person.full_name}
                 </button>
               </span>
-              <div className="flex items-center gap-2">
+              <div className="flex shrink-0 items-center gap-2">
                 {isShareholder && (
                   <input
                     type="number"
+                    inputMode="numeric"
                     min={0}
                     disabled={!editable}
                     defaultValue={(link as ShareholderLink).shares ?? ''}
                     onBlur={(e) => updateShares(link.id, e.target.value)}
                     placeholder="shares"
-                    className="w-24 rounded-sm border border-ink/20 bg-white/60 px-2 py-1 text-right font-mono text-xs disabled:border-transparent disabled:bg-transparent"
+                    className="w-20 shrink-0 rounded-sm border border-ink/20 bg-white/60 px-2 py-1.5 text-right font-mono text-sm disabled:border-transparent disabled:bg-transparent sm:text-xs"
                   />
                 )}
                 {editable && (
                   <button
                     type="button"
-                    className="text-xs text-redact hover:underline disabled:opacity-40"
+                    className="shrink-0 rounded-sm px-2 py-1.5 text-xs text-redact hover:bg-redact/10 hover:underline disabled:opacity-40"
                     disabled={busy}
                     onClick={() => removeLink(link.id)}
                     aria-label={`Remove ${link.person.full_name} from ${label.singular.toLowerCase()}s`}

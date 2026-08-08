@@ -10,16 +10,32 @@ import { useAuth } from './hooks/useAuth'
 import { useCompanies, matchesSearch } from './hooks/useCompanies'
 import { buildPersonIndex } from './lib/relationships'
 
+function SignInGate() {
+  const [showLogin, setShowLogin] = useState(false)
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center bg-paper px-4 text-center">
+      <p className="text-xs uppercase tracking-[0.2em] text-brass">Group corporate record</p>
+      <h1 className="mt-1 font-display text-3xl font-semibold text-ledger sm:text-4xl">Company Register</h1>
+      <p className="mt-3 max-w-sm text-sm text-ink/60">
+        This register is private. Sign in to view companies, directors, PSC, and shareholders.
+      </p>
+      <button type="button" className="btn-primary mt-6" onClick={() => setShowLogin(true)}>
+        Sign in
+      </button>
+      {showLogin && <LoginPanel onClose={() => setShowLogin(false)} />}
+    </div>
+  )
+}
+
 export default function App() {
-  const { isAuthenticated, signOut } = useAuth()
-  const { companies, loading, error, refresh } = useCompanies()
+  const { isAuthenticated, loading: authLoading, signOut } = useAuth()
+  const { companies, loading, error, refresh } = useCompanies(isAuthenticated)
 
   const [search, setSearch] = useState('')
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null)
   const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null)
   const [showGraph, setShowGraph] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
-  const [showLogin, setShowLogin] = useState(false)
 
   const filtered = useMemo(
     () => companies.filter((c) => matchesSearch(c, search)),
@@ -41,6 +57,16 @@ export default function App() {
     setSelectedPersonId(id)
   }
 
+  // Avoid flashing the sign-in gate for the brief moment auth state is
+  // still being read from storage on first load.
+  if (authLoading) {
+    return <div className="min-h-screen bg-paper" />
+  }
+
+  if (!isAuthenticated) {
+    return <SignInGate />
+  }
+
   return (
     <div className="min-h-screen bg-paper">
       <Header
@@ -48,8 +74,6 @@ export default function App() {
         peopleCount={personIndex.size}
         search={search}
         onSearchChange={setSearch}
-        isAuthenticated={isAuthenticated}
-        onSignInClick={() => setShowLogin(true)}
         onSignOutClick={signOut}
         onAddCompanyClick={() => setShowAddForm(true)}
         onShowGraphClick={() => setShowGraph(true)}
@@ -114,8 +138,6 @@ export default function App() {
           }}
         />
       )}
-
-      {showLogin && <LoginPanel onClose={() => setShowLogin(false)} />}
     </div>
   )
 }

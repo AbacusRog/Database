@@ -42,24 +42,24 @@ export function CompanyDetail({ company, editable, onChange, onClose, onDeleted,
 
   return (
     <div
-      className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-ink/40 px-4 py-8"
+      className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-ink/40 px-3 py-4 sm:px-4 sm:py-8"
       onClick={onClose}
     >
       <div
         className="w-full max-w-2xl rounded-sm border border-rule bg-paper shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-start justify-between border-b border-rule px-6 py-5">
+        <div className="flex items-start justify-between border-b border-rule px-4 py-4 sm:px-6 sm:py-5">
           <div className="flex-1">
             {editable ? (
               <input
-                className="w-full bg-transparent font-display text-2xl font-semibold text-ledger focus:outline-none focus:border-b focus:border-brass"
+                className="w-full bg-transparent font-display text-xl font-semibold text-ledger focus:outline-none focus:border-b focus:border-brass sm:text-2xl"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 onBlur={() => name.trim() && name !== company.name && saveField('name', name)}
               />
             ) : (
-              <h2 className="font-display text-2xl font-semibold text-ledger">{company.name}</h2>
+              <h2 className="font-display text-xl font-semibold text-ledger sm:text-2xl">{company.name}</h2>
             )}
             <div className="mt-1 flex items-center gap-2">
               <span className="text-xs uppercase tracking-wide text-ink/50">Company no.</span>
@@ -83,13 +83,13 @@ export function CompanyDetail({ company, editable, onChange, onClose, onDeleted,
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="text-ink/50 hover:text-ink text-xl leading-none px-1"
+            className="close-btn"
           >
             ×
           </button>
         </div>
 
-        <div className="grid gap-6 px-6 py-6 sm:grid-cols-3">
+        <div className="grid gap-5 px-4 py-5 sm:grid-cols-3 sm:gap-6 sm:px-6 sm:py-6">
           <RoleEditor
             companyId={company.id}
             role="director"
@@ -123,7 +123,7 @@ export function CompanyDetail({ company, editable, onChange, onClose, onDeleted,
         </div>
 
         {editable && (
-          <div className="border-t border-rule px-6 py-4">
+          <div className="border-t border-rule px-4 py-4 sm:px-6">
             {confirmingDelete ? (
               <div className="flex items-center gap-3 text-sm">
                 <span className="text-ink/70">Delete {company.name} and all its records?</span>

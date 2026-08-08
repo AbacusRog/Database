@@ -8,20 +8,9 @@ persons with significant control (PSC), and shareholders. Built with:
 - **Cloudflare Pages** — static hosting, auto-deploys from GitHub
 - **GitHub** — source control and the trigger for deploys
 
-Anyone with the link can search and view the register. Adding, editing, or
-deleting a company, director, PSC, or shareholder requires signing in.
-
-Beyond the basic company list, the register also has:
-
-- **Person view** — click any director, PSC, or shareholder's name (from the
-  list or from inside a company) to see every company they're connected to,
-  not just the one you clicked from.
-- **Relationship map** — the "Relationship map" button in the header opens a
-  full diagram connecting every company to every person, colour-coded by
-  role (director / PSC / shareholder). Hover a name to trace its
-  connections; click one to open its detail.
-- **Search** — matches on company name, company number, *and* any linked
-  director/PSC/shareholder name.
+Sign-in is required for everything — no company, director, PSC, or
+shareholder data is visible until you log in. Once signed in, that same
+account can also add, edit, and delete.
 
 ---
 
@@ -38,6 +27,10 @@ Beyond the basic company list, the register also has:
    companies from your original spreadsheet (Team Spirits Airport Operations,
    Team Spirits Group, IFK Holdings, Staywell Solutions, ISR Property
    Investments) with their directors, PSC, and shareholders.
+
+   **Already have this project set up from before?** Don't re-run
+   `schema.sql` — it'll error on policies that already exist. Just run
+   `supabase/make-private.sql` instead; it only changes who can view.
 5. Go to **Project Settings → Data API**. Copy the **Project URL** and the
    **anon public** key — you'll need both in step 3 below. (The anon key is
    safe to put in frontend code; it only grants what the RLS policies you
@@ -134,13 +127,13 @@ under **Custom domains** on the Pages project.
 
 ## Changing who can view the register
 
-Right now: **anyone with the link can view; only signed-in users can edit.**
+Right now: **sign-in is required for everything — viewing included.**
 
-If you'd rather make the whole register private (login required just to
-*view* it too), open `supabase/schema.sql` — there's a commented-out block
-near the bottom with the two SQL commands to run instead (drop the public
-read policies, add authenticated-only read policies). Run those in the SQL
-Editor and it takes effect immediately, no redeploy needed.
+If you'd rather let anyone with the link view (and only gate editing), open
+`supabase/schema.sql` — there's a commented-out "public read" block near the
+bottom with the SQL to run instead. Or, on an already-running project, the
+reverse migration is in the comments at the bottom of
+`supabase/make-private.sql`.
 
 ## Notes on the data model
 

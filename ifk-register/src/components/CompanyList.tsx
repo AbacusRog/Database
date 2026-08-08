@@ -61,7 +61,7 @@ export function CompanyList({ companies, onSelectCompany, onSelectPerson }: Prop
                 onSelectCompany(company)
               }
             }}
-            className="group grid w-full cursor-pointer grid-cols-[2.5rem_1fr] gap-x-4 gap-y-1 px-2 py-4 text-left transition-colors hover:bg-ledger/[0.03] sm:grid-cols-[2.5rem_1.5fr_1fr]"
+            className="group grid w-full cursor-pointer grid-cols-[2.5rem_1fr] gap-x-4 gap-y-2 px-2 py-4 text-left transition-colors hover:bg-ledger/[0.03] sm:grid-cols-[2.5rem_1.5fr_1fr] sm:gap-y-1"
           >
             <span className="font-mono text-xs text-ink/30 pt-1">{String(i + 1).padStart(2, '0')}</span>
 
@@ -80,12 +80,12 @@ export function CompanyList({ companies, onSelectCompany, onSelectPerson }: Prop
               </p>
             </div>
 
-            <div className="mt-1 grid grid-cols-2 gap-2 text-xs text-ink/60 sm:mt-0 sm:block sm:text-right">
+            <div className="col-span-2 space-y-1 pl-[2.5rem] text-sm text-ink/60 sm:col-span-1 sm:space-y-0.5 sm:pl-0 sm:text-right sm:text-xs">
               <p>
                 <span className="text-ink/40">PSC — </span>
                 <NameList links={company.pscs} emptyLabel="—" onSelectPerson={onSelectPerson} />
               </p>
-              <p className="mt-0.5">
+              <p>
                 <span className="text-ink/40">Shareholders — </span>
                 <NameList links={company.shareholders} emptyLabel="—" onSelectPerson={onSelectPerson} />
               </p>

@@ -4,17 +4,18 @@ import type { CompanyWithRoles } from '../types'
 
 const SELECT = `
   id, name, company_number, notes, created_at,
-  directors:company_directors!company_id ( id, company_id, person_id, notes, person:people!person_id ( id, full_name, notes ) ),
-  pscs:company_pscs!company_id ( id, company_id, person_id, notes, person:people!person_id ( id, full_name, notes ) ),
-  shareholders:company_shareholders!company_id ( id, company_id, person_id, shares, notes, person:people!person_id ( id, full_name, notes ) )
+  directors:company_directors ( id, company_id, person_id, notes, person:people ( id, full_name, notes ) ),
+  pscs:company_pscs ( id, company_id, person_id, notes, person:people ( id, full_name, notes ) ),
+  shareholders:company_shareholders ( id, company_id, person_id, shares, notes, person:people ( id, full_name, notes ) )
 `
 
-export function useCompanies() {
+export function useCompanies(enabled: boolean) {
   const [companies, setCompanies] = useState<CompanyWithRoles[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(enabled)
   const [error, setError] = useState<string | null>(null)
 
   const refresh = useCallback(async () => {
+    if (!enabled) return
     setLoading(true)
     const { data, error } = await supabase
       .from('companies')
@@ -28,11 +29,19 @@ export function useCompanies() {
       setCompanies((data ?? []) as unknown as CompanyWithRoles[])
     }
     setLoading(false)
-  }, [])
+  }, [enabled])
 
   useEffect(() => {
-    refresh()
-  }, [refresh])
+    if (enabled) {
+      refresh()
+    } else {
+      // Signed out: don't hold onto previously-loaded data or keep polling —
+      // RLS would block the request anyway, but there's no reason to send it.
+      setCompanies([])
+      setError(null)
+      setLoading(false)
+    }
+  }, [enabled, refresh])
 
   return { companies, loading, error, refresh }
 }

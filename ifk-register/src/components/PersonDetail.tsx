@@ -48,32 +48,32 @@ export function PersonDetail({ entry, editable, onChange, onClose, onSelectCompa
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-ink/40 px-4 py-8" onClick={onClose}>
+    <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-ink/40 px-3 py-4 sm:px-4 sm:py-8" onClick={onClose}>
       <div className="w-full max-w-xl rounded-sm border border-rule bg-paper shadow-xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-start justify-between border-b border-rule px-6 py-5">
+        <div className="flex items-start justify-between border-b border-rule px-4 py-4 sm:px-6 sm:py-5">
           <div className="flex-1">
             <p className="text-xs uppercase tracking-wide text-ink/50">Individual</p>
             {editable ? (
               <input
-                className="w-full bg-transparent font-display text-2xl font-semibold text-ledger focus:outline-none"
+                className="w-full bg-transparent font-display text-xl font-semibold text-ledger focus:outline-none sm:text-2xl"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 onBlur={saveName}
               />
             ) : (
-              <h2 className="font-display text-2xl font-semibold text-ledger">{entry.person.full_name}</h2>
+              <h2 className="font-display text-xl font-semibold text-ledger sm:text-2xl">{entry.person.full_name}</h2>
             )}
             {saving && <span className="text-xs text-ink/40">saving…</span>}
             <p className="mt-1 text-sm text-ink/50">
               Linked to {byCompany.size} compan{byCompany.size === 1 ? 'y' : 'ies'}
             </p>
           </div>
-          <button type="button" onClick={onClose} aria-label="Close" className="text-ink/50 hover:text-ink text-xl leading-none px-1">
+          <button type="button" onClick={onClose} aria-label="Close" className="close-btn">
             ×
           </button>
         </div>
 
-        <ul className="divide-y divide-rule px-6 py-2">
+        <ul className="divide-y divide-rule px-4 py-2 sm:px-6">
           {[...byCompany.entries()].map(([companyId, c]) => (
             <li key={companyId} className="py-3">
               <button
@@ -101,7 +101,7 @@ export function PersonDetail({ entry, editable, onChange, onClose, onSelectCompa
           ))}
         </ul>
 
-        <div className="border-t border-rule px-6 py-3 text-xs text-ink/40">
+        <div className="border-t border-rule px-4 py-3 text-xs text-ink/40 sm:px-6">
           To remove this person from a company, open that company and use Remove next to their name.
         </div>
       </div>

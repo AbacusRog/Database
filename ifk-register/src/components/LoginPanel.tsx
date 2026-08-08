@@ -22,19 +22,19 @@ export function LoginPanel({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/40 px-4 py-8" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/40 px-3 py-4 sm:px-4 sm:py-8" onClick={onClose}>
       <form
         onSubmit={handleSubmit}
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-sm rounded-sm border border-rule bg-paper shadow-xl"
       >
-        <div className="flex items-center justify-between border-b border-rule px-6 py-4">
+        <div className="flex items-center justify-between border-b border-rule px-4 py-3 sm:px-6 sm:py-4">
           <h2 className="font-display text-lg font-semibold text-ledger">Sign in to edit</h2>
-          <button type="button" onClick={onClose} aria-label="Close" className="text-ink/50 hover:text-ink text-xl leading-none px-1">
+          <button type="button" onClick={onClose} aria-label="Close" className="close-btn">
             ×
           </button>
         </div>
-        <div className="space-y-4 px-6 py-5">
+        <div className="space-y-4 px-4 py-4 sm:px-6 sm:py-5">
           <div>
             <label className="field-label" htmlFor="email">Email</label>
             <input id="email" type="email" className="field-input" value={email} onChange={(e) => setEmail(e.target.value)} autoFocus />
@@ -45,7 +45,7 @@ export function LoginPanel({ onClose }: { onClose: () => void }) {
           </div>
           {error && <p className="text-sm text-redact">{error}</p>}
         </div>
-        <div className="flex justify-end gap-2 border-t border-rule px-6 py-4">
+        <div className="flex justify-end gap-2 border-t border-rule px-4 py-3 sm:px-6 sm:py-4">
           <button type="button" className="btn-secondary" onClick={onClose}>Cancel</button>
           <button type="submit" className="btn-primary" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
         </div>
