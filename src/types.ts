@@ -1,0 +1,66 @@
+export interface Person {
+  id: string
+  full_name: string
+  notes: string | null
+}
+
+export interface Company {
+  id: string
+  name: string
+  company_number: string | null
+  notes: string | null
+  created_at: string
+}
+
+export interface RoleLink {
+  id: string
+  company_id: string
+  person_id: string
+  person: Person
+  notes?: string | null
+}
+
+export interface ShareholderLink extends RoleLink {
+  shares: number | null
+}
+
+export type DueDateTask = 'year_end' | 'confirmation_statement' | 'vat_return'
+
+export interface CompanyDueDate {
+  id: string
+  company_id: string
+  task_type: DueDateTask
+  due_date: string // ISO date string, e.g. "2026-03-31"
+}
+
+export interface CompanyWithRoles extends Company {
+  directors: RoleLink[]
+  pscs: RoleLink[]
+  shareholders: ShareholderLink[]
+  due_dates: CompanyDueDate[]
+}
+
+export type RoleKind = 'director' | 'psc' | 'shareholder'
+
+export interface PersonRoleEntry {
+  companyId: string
+  companyName: string
+  companyNumber: string | null
+  role: RoleKind
+  shares?: number | null
+}
+
+export interface PersonWithRoles {
+  person: Person
+  roles: PersonRoleEntry[]
+}
+
+export interface UpcomingDueDate {
+  companyId: string
+  companyName: string
+  companyNumber: string | null
+  task: DueDateTask
+  anchorDate: string
+  nextDueDate: Date | null // null when no anchor date has been set yet
+}
+
