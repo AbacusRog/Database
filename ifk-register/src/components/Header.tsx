@@ -6,6 +6,7 @@ interface Props {
   onSignOutClick: () => void
   onAddCompanyClick: () => void
   onShowGraphClick: () => void
+  onShowDueDatesClick: () => void
 }
 
 export function Header({
@@ -16,6 +17,7 @@ export function Header({
   onSignOutClick,
   onAddCompanyClick,
   onShowGraphClick,
+  onShowDueDatesClick,
 }: Props) {
   return (
     <header className="border-b border-rule bg-paper">
@@ -34,6 +36,9 @@ export function Header({
           </div>
           <div className="flex flex-col items-start gap-2 sm:shrink-0 sm:items-end">
             <div className="flex flex-wrap gap-2">
+              <button type="button" className="btn-secondary text-xs" onClick={onShowDueDatesClick}>
+                Due dates
+              </button>
               <button type="button" className="btn-secondary text-xs" onClick={onShowGraphClick}>
                 Relationship map
               </button>

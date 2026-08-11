@@ -4,6 +4,7 @@ import { CompanyList } from './components/CompanyList'
 import { CompanyDetail } from './components/CompanyDetail'
 import { PersonDetail } from './components/PersonDetail'
 import { RelationshipGraph } from './components/RelationshipGraph'
+import { DueDatesPage } from './components/DueDatesPage'
 import { AddCompanyForm } from './components/AddCompanyForm'
 import { LoginPanel } from './components/LoginPanel'
 import { useAuth } from './hooks/useAuth'
@@ -35,6 +36,7 @@ export default function App() {
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null)
   const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null)
   const [showGraph, setShowGraph] = useState(false)
+  const [showDueDates, setShowDueDates] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
 
   const filtered = useMemo(
@@ -77,6 +79,7 @@ export default function App() {
         onSignOutClick={signOut}
         onAddCompanyClick={() => setShowAddForm(true)}
         onShowGraphClick={() => setShowGraph(true)}
+        onShowDueDatesClick={() => setShowDueDates(true)}
       />
 
       <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
@@ -102,6 +105,17 @@ export default function App() {
           onClose={() => setShowGraph(false)}
           onSelectCompany={openCompany}
           onSelectPerson={openPerson}
+        />
+      )}
+
+      {showDueDates && (
+        <DueDatesPage
+          companies={companies}
+          onClose={() => setShowDueDates(false)}
+          onSelectCompany={(id) => {
+            setShowDueDates(false)
+            openCompany(id)
+          }}
         />
       )}
 

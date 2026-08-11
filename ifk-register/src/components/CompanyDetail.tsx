@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { usePeople } from '../hooks/usePeople'
 import { RoleEditor } from './RoleEditor'
+import { DueDatesEditor } from './DueDatesEditor'
 import type { CompanyWithRoles } from '../types'
 
 interface Props {
@@ -119,6 +120,15 @@ export function CompanyDetail({ company, editable, onChange, onClose, onDeleted,
             people={people}
             findOrCreate={findOrCreate}
             onSelectPerson={onSelectPerson}
+          />
+        </div>
+
+        <div className="border-t border-rule px-4 py-5 sm:px-6 sm:py-6">
+          <DueDatesEditor
+            companyId={company.id}
+            dueDates={company.due_dates}
+            editable={editable}
+            onChange={onChange}
           />
         </div>
 

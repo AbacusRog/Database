@@ -6,7 +6,8 @@ const SELECT = `
   id, name, company_number, notes, created_at,
   directors:company_directors ( id, company_id, person_id, notes, person:people ( id, full_name, notes ) ),
   pscs:company_pscs ( id, company_id, person_id, notes, person:people ( id, full_name, notes ) ),
-  shareholders:company_shareholders ( id, company_id, person_id, shares, notes, person:people ( id, full_name, notes ) )
+  shareholders:company_shareholders ( id, company_id, person_id, shares, notes, person:people ( id, full_name, notes ) ),
+  due_dates:company_due_dates ( id, company_id, task_type, due_date )
 `
 
 export function useCompanies(enabled: boolean) {

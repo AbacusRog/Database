@@ -12,6 +12,13 @@ Sign-in is required for everything — no company, director, PSC, or
 shareholder data is visible until you log in. Once signed in, that same
 account can also add, edit, and delete.
 
+Each company also tracks three recurring compliance dates — Year-End,
+Confirmation Statement, and VAT Return — set once each and shown on a
+sortable "Due dates" page (sort by date, company, or task). You enter a
+date once; the app works out the next occurrence itself (annually for
+Year-End and Confirmation Statement, quarterly for VAT Return), so nothing
+needs re-entering as each deadline passes.
+
 ---
 
 ## 1. Set up Supabase
@@ -30,7 +37,8 @@ account can also add, edit, and delete.
 
    **Already have this project set up from before?** Don't re-run
    `schema.sql` — it'll error on policies that already exist. Just run
-   `supabase/make-private.sql` instead; it only changes who can view.
+   `supabase/make-private.sql` and/or `supabase/add-due-dates.sql` instead,
+   whichever features you're adding — see the note at the top of each file.
 5. Go to **Project Settings → Data API**. Copy the **Project URL** and the
    **anon public** key — you'll need both in step 3 below. (The anon key is
    safe to put in frontend code; it only grants what the RLS policies you
@@ -149,6 +157,16 @@ Removing a person from a company's director/PSC/shareholder list only
 removes that link, not the person record itself — so their history on other
 companies is untouched. There's no in-app "delete this person everywhere"
 action by design; do that from the Supabase Table Editor if you ever need it.
+
+Due dates work the same way regardless of when you look: each is stored as
+a single anchor date (`supabase/schema.sql` → `company_due_dates`), and the
+app rolls it forward by the task's recurrence — 12 months for Year-End and
+Confirmation Statement, 3 months for VAT Return — until it lands on today
+or later. That means you never have to re-enter a date after a deadline
+passes; the "next due" date just advances on its own the next time anyone
+loads the page. If you ever need to see the date exactly as entered rather
+than the computed next occurrence, it's the raw `due_date` column in that
+table.
 
 ## If search or the relationship map ever comes back empty
 
