@@ -61,6 +61,7 @@ export interface UpcomingDueDate {
   companyNumber: string | null
   task: DueDateTask
   anchorDate: string
-  nextDueDate: Date | null // null when no anchor date has been set yet
+  dueDate: Date | null // the recurring reference date (e.g. accounting year end)
+  dueByDate: Date | null // the actual statutory filing deadline
 }
 

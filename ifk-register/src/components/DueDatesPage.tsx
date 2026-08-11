@@ -8,7 +8,7 @@ interface Props {
   onSelectCompany: (companyId: string) => void
 }
 
-type SortMode = 'dueDate' | 'company' | 'task'
+type SortMode = 'dueBy' | 'company' | 'task'
 
 const TASK_DOT: Record<DueDateTask, string> = {
   year_end: 'bg-ledger',
@@ -29,7 +29,7 @@ function dueSoonText(days: number): string {
 }
 
 export function DueDatesPage({ companies, onClose, onSelectCompany }: Props) {
-  const [sortMode, setSortMode] = useState<SortMode>('dueDate')
+  const [sortMode, setSortMode] = useState<SortMode>('dueBy')
 
   const rows = useMemo(() => buildUpcomingDueDates(companies), [companies])
 
@@ -44,12 +44,12 @@ export function DueDatesPage({ companies, onClose, onSelectCompany }: Props) {
         const byTask = TASK_ORDER.indexOf(a.task) - TASK_ORDER.indexOf(b.task)
         return byTask !== 0 ? byTask : a.companyName.localeCompare(b.companyName)
       }
-      // Due date: rows with no date set yet sort to the bottom rather than
+      // Due by: rows with no date set yet sort to the bottom rather than
       // being hidden, so gaps in the data stay visible.
-      if (!a.nextDueDate && !b.nextDueDate) return a.companyName.localeCompare(b.companyName)
-      if (!a.nextDueDate) return 1
-      if (!b.nextDueDate) return -1
-      return a.nextDueDate.getTime() - b.nextDueDate.getTime()
+      if (!a.dueByDate && !b.dueByDate) return a.companyName.localeCompare(b.companyName)
+      if (!a.dueByDate) return 1
+      if (!b.dueByDate) return -1
+      return a.dueByDate.getTime() - b.dueByDate.getTime()
     })
     return copy
   }, [rows, sortMode])
@@ -68,7 +68,7 @@ export function DueDatesPage({ companies, onClose, onSelectCompany }: Props) {
 
       <div className="flex flex-wrap items-center gap-2 border-b border-rule px-4 py-3 sm:px-6">
         <span className="text-xs uppercase tracking-wide text-ink/40">Sort by</span>
-        {(['dueDate', 'company', 'task'] as SortMode[]).map((mode) => (
+        {(['dueBy', 'company', 'task'] as SortMode[]).map((mode) => (
           <button
             key={mode}
             type="button"
@@ -79,7 +79,7 @@ export function DueDatesPage({ companies, onClose, onSelectCompany }: Props) {
                 : 'border-ink/20 text-ink/60 hover:border-ink/40'
             }`}
           >
-            {mode === 'dueDate' ? 'Due date' : mode === 'company' ? 'Company' : 'Task'}
+            {mode === 'dueBy' ? 'Due by' : mode === 'company' ? 'Company' : 'Task'}
           </button>
         ))}
       </div>
@@ -91,7 +91,7 @@ export function DueDatesPage({ companies, onClose, onSelectCompany }: Props) {
           ) : (
             <ol className="border-t border-rule">
               {sorted.map((row) => {
-                const days = row.nextDueDate ? daysUntil(row.nextDueDate) : null
+                const dueByDays = row.dueByDate ? daysUntil(row.dueByDate) : null
                 return (
                   <li key={`${row.companyId}-${row.task}`} className="ledger-rule">
                     <button
@@ -108,14 +108,17 @@ export function DueDatesPage({ companies, onClose, onSelectCompany }: Props) {
                           {row.companyName}
                         </span>
                       </span>
-                      <span className="pl-4 text-sm sm:shrink-0 sm:pl-0">
-                        {row.nextDueDate && days !== null ? (
+                      <span className="pl-4 text-right text-xs sm:shrink-0 sm:pl-0">
+                        {row.dueDate && row.dueByDate && dueByDays !== null ? (
                           <>
-                            {formatDate(row.nextDueDate)}{' '}
-                            <span className={`text-xs ${dueSoonClass(days)}`}>({dueSoonText(days)})</span>
+                            <span className="block text-ink/50">Due date {formatDate(row.dueDate)}</span>
+                            <span className="block text-sm">
+                              Due by {formatDate(row.dueByDate)}{' '}
+                              <span className={dueSoonClass(dueByDays)}>({dueSoonText(dueByDays)})</span>
+                            </span>
                           </>
                         ) : (
-                          <span className="text-xs italic text-ink/40">Not set</span>
+                          <span className="italic text-ink/40">Not set</span>
                         )}
                       </span>
                     </button>

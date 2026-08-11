@@ -1,6 +1,15 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
-import { TASK_ORDER, TASK_LABEL, TASK_RECURRENCE_LABEL, nextOccurrence, daysUntil, formatDate } from '../lib/dueDates'
+import {
+  TASK_ORDER,
+  TASK_LABEL,
+  TASK_RECURRENCE_LABEL,
+  TASK_DUE_BY_OFFSET_LABEL,
+  nextOccurrence,
+  computeDueBy,
+  daysUntil,
+  formatDate,
+} from '../lib/dueDates'
 import type { CompanyDueDate, DueDateTask } from '../types'
 
 interface Props {
@@ -54,17 +63,19 @@ export function DueDatesEditor({ companyId, dueDates, editable, onChange }: Prop
   return (
     <div>
       <h3 className="font-display text-sm font-semibold uppercase tracking-wide text-ledger">Due dates</h3>
-      <div className="mt-2 grid gap-4 sm:grid-cols-3">
+      <div className="mt-2 grid gap-5 sm:grid-cols-3">
         {TASK_ORDER.map((task) => {
           const anchor = values[task]
-          const next = anchor ? nextOccurrence(task, anchor) : null
-          const days = next ? daysUntil(next) : null
+          const dueDate = anchor ? nextOccurrence(task, anchor) : null
+          const dueBy = dueDate ? computeDueBy(task, dueDate) : null
+          const dueByDays = dueBy ? daysUntil(dueBy) : null
           return (
             <div key={task}>
               <label className="field-label" htmlFor={`due-${task}`}>
                 {TASK_LABEL[task]}{' '}
                 <span className="normal-case text-ink/40">— {TASK_RECURRENCE_LABEL[task]}</span>
               </label>
+              <p className="-mt-0.5 mb-1.5 text-[11px] text-ink/40">{TASK_DUE_BY_OFFSET_LABEL[task]}</p>
 
               {editable ? (
                 <input
@@ -75,20 +86,26 @@ export function DueDatesEditor({ companyId, dueDates, editable, onChange }: Prop
                   onBlur={(e) => save(task, e.target.value)}
                   className="field-input"
                 />
-              ) : next && days !== null ? (
-                <p className="text-sm text-ink">
-                  {formatDate(next)} <span className={`text-xs ${dueSoonClass(days)}`}>({dueSoonText(days)})</span>
-                </p>
+              ) : dueDate && dueBy && dueByDays !== null ? (
+                <div className="text-sm text-ink">
+                  <p className="text-ink/60">Due date: {formatDate(dueDate)}</p>
+                  <p>
+                    Due by: {formatDate(dueBy)}{' '}
+                    <span className={`text-xs ${dueSoonClass(dueByDays)}`}>({dueSoonText(dueByDays)})</span>
+                  </p>
+                </div>
               ) : (
                 <p className="text-sm italic text-ink/40">Not set</p>
               )}
 
               {editable && saving === task && <p className="mt-1 text-xs text-ink/40">saving…</p>}
-              {editable && saving !== task && next && days !== null && (
-                <p className="mt-1 text-xs text-ink/50">
-                  Next due: {formatDate(next)}{' '}
-                  <span className={dueSoonClass(days)}>({dueSoonText(days)})</span>
-                </p>
+              {editable && saving !== task && dueDate && dueBy && dueByDays !== null && (
+                <div className="mt-1 text-xs text-ink/50">
+                  <p>Due date: {formatDate(dueDate)}</p>
+                  <p>
+                    Due by: {formatDate(dueBy)} <span className={dueSoonClass(dueByDays)}>({dueSoonText(dueByDays)})</span>
+                  </p>
+                </div>
               )}
             </div>
           )

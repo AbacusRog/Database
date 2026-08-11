@@ -14,6 +14,15 @@ export const TASK_RECURRENCE_LABEL: Record<DueDateTask, string> = {
   vat_return: 'Quarterly',
 }
 
+/** Human-readable statutory offset from the due date to the actual filing
+ *  deadline, shown next to each field so the 9-months/1-year-14-days/etc.
+ *  rule is visible rather than hidden inside the calculation. */
+export const TASK_DUE_BY_OFFSET_LABEL: Record<DueDateTask, string> = {
+  year_end: 'due by 9 months after',
+  confirmation_statement: 'due by 1 year + 14 days after',
+  vat_return: 'due by 1 month + 7 days after',
+}
+
 const TASK_INTERVAL_MONTHS: Record<DueDateTask, number> = {
   year_end: 12,
   confirmation_statement: 12,
@@ -59,6 +68,28 @@ export function nextOccurrence(task: DueDateTask, anchorDateIso: string, from: D
   return next
 }
 
+function addDays(date: Date, days: number): Date {
+  const d = new Date(date)
+  d.setDate(d.getDate() + days)
+  return d
+}
+
+/** Turns a due date into the actual statutory filing deadline ("due by"):
+ *  - Year-End: accounts are due 9 months after the accounting year end.
+ *  - Confirmation Statement: due 14 days after the 1-year review period ends.
+ *  - VAT Return: due 1 month and 7 days after the VAT period ends.
+ *  Example: year end 31 May 2026 → due by 28 Feb 2027. */
+export function computeDueBy(task: DueDateTask, dueDate: Date): Date {
+  switch (task) {
+    case 'year_end':
+      return addMonthsClamped(dueDate, 9)
+    case 'confirmation_statement':
+      return addDays(addMonthsClamped(dueDate, 12), 14)
+    case 'vat_return':
+      return addDays(addMonthsClamped(dueDate, 1), 7)
+  }
+}
+
 export function daysUntil(date: Date, from: Date = startOfToday()): number {
   const msPerDay = 24 * 60 * 60 * 1000
   return Math.round((date.getTime() - from.getTime()) / msPerDay)
@@ -79,13 +110,15 @@ export function buildUpcomingDueDates(companies: CompanyWithRoles[]): UpcomingDu
   for (const company of companies) {
     for (const task of TASK_ORDER) {
       const record = company.due_dates.find((d) => d.task_type === task)
+      const dueDate = record ? nextOccurrence(task, record.due_date) : null
       rows.push({
         companyId: company.id,
         companyName: company.name,
         companyNumber: company.company_number,
         task,
         anchorDate: record?.due_date ?? '',
-        nextDueDate: record ? nextOccurrence(task, record.due_date) : null,
+        dueDate,
+        dueByDate: dueDate ? computeDueBy(task, dueDate) : null,
       })
     }
   }
