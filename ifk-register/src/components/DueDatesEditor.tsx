@@ -5,10 +5,12 @@ import {
   TASK_LABEL,
   TASK_RECURRENCE_LABEL,
   TASK_DUE_BY_OFFSET_LABEL,
-  nextOccurrence,
+  parseDueDate,
   computeDueBy,
   daysUntil,
   formatDate,
+  dueSoonClass,
+  dueSoonText,
 } from '../lib/dueDates'
 import type { CompanyDueDate, DueDateTask } from '../types'
 
@@ -17,18 +19,6 @@ interface Props {
   dueDates: CompanyDueDate[]
   editable: boolean
   onChange: () => void
-}
-
-function dueSoonClass(days: number): string {
-  if (days <= 14) return 'font-medium text-redact'
-  if (days <= 30) return 'font-medium text-brass'
-  return ''
-}
-
-function dueSoonText(days: number): string {
-  if (days <= 0) return 'due now'
-  if (days === 1) return 'in 1 day'
-  return `in ${days} days`
 }
 
 export function DueDatesEditor({ companyId, dueDates, editable, onChange }: Props) {
@@ -66,7 +56,7 @@ export function DueDatesEditor({ companyId, dueDates, editable, onChange }: Prop
       <div className="mt-2 grid gap-5 sm:grid-cols-3">
         {TASK_ORDER.map((task) => {
           const anchor = values[task]
-          const dueDate = anchor ? nextOccurrence(task, anchor) : null
+          const dueDate = anchor ? parseDueDate(anchor) : null
           const dueBy = dueDate ? computeDueBy(task, dueDate) : null
           const dueByDays = dueBy ? daysUntil(dueBy) : null
           return (

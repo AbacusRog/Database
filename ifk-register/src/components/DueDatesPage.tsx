@@ -1,6 +1,14 @@
 import { useMemo, useState } from 'react'
 import type { CompanyWithRoles, DueDateTask } from '../types'
-import { buildUpcomingDueDates, TASK_LABEL, TASK_ORDER, formatDate, daysUntil } from '../lib/dueDates'
+import {
+  buildUpcomingDueDates,
+  TASK_LABEL,
+  TASK_ORDER,
+  formatDate,
+  daysUntil,
+  dueSoonClass,
+  dueSoonText,
+} from '../lib/dueDates'
 
 interface Props {
   companies: CompanyWithRoles[]
@@ -14,18 +22,6 @@ const TASK_DOT: Record<DueDateTask, string> = {
   year_end: 'bg-ledger',
   confirmation_statement: 'bg-brass',
   vat_return: 'bg-steel',
-}
-
-function dueSoonClass(days: number): string {
-  if (days <= 14) return 'font-medium text-redact'
-  if (days <= 30) return 'font-medium text-brass'
-  return 'text-ink/60'
-}
-
-function dueSoonText(days: number): string {
-  if (days <= 0) return 'due now'
-  if (days === 1) return 'in 1 day'
-  return `in ${days} days`
 }
 
 export function DueDatesPage({ companies, onClose, onSelectCompany }: Props) {
