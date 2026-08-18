@@ -6,44 +6,43 @@ import {
   formatIsoDate,
   formatDateIso,
 } from '../lib/dueDates'
+import { AuthenticationCodeField } from './AuthenticationCodeField'
 import type { CompanyDueDate } from '../types'
 
 interface Props {
   companyId: string
   utr: string | null
-  authenticationCode: string | null
   vatNumber: string | null
   incorporationDate: string | null
   dueDates: CompanyDueDate[]
   editable: boolean
+  isAdmin: boolean
   onChange: () => void
 }
 
-const FIELDS: { key: 'utr' | 'authentication_code' | 'vat_number'; label: string; placeholder: string }[] = [
+const FIELDS: { key: 'utr' | 'vat_number'; label: string; placeholder: string }[] = [
   { key: 'utr', label: 'UTR', placeholder: '10-digit UTR' },
-  { key: 'authentication_code', label: 'Authentication Code', placeholder: 'e.g. Ab1Cd2' },
   { key: 'vat_number', label: 'VAT Number', placeholder: 'e.g. GB123456789' },
 ]
 
 export function CompanyDetailsEditor({
   companyId,
   utr,
-  authenticationCode,
   vatNumber,
   incorporationDate,
   dueDates,
   editable,
+  isAdmin,
   onChange,
 }: Props) {
   const [values, setValues] = useState({
     utr: utr ?? '',
-    authentication_code: authenticationCode ?? '',
     vat_number: vatNumber ?? '',
   })
   const [incDate, setIncDate] = useState(incorporationDate ?? '')
   const [saving, setSaving] = useState<string | null>(null)
 
-  async function saveTextField(key: 'utr' | 'authentication_code' | 'vat_number', value: string, original: string) {
+  async function saveTextField(key: 'utr' | 'vat_number', value: string, original: string) {
     if (value === original) return
     setSaving(key)
     const { error } = await supabase
@@ -108,11 +107,7 @@ export function CompanyDetailsEditor({
                 placeholder={placeholder}
                 onChange={(e) => setValues((v) => ({ ...v, [key]: e.target.value }))}
                 onBlur={(e) =>
-                  saveTextField(
-                    key,
-                    e.target.value,
-                    key === 'utr' ? utr ?? '' : key === 'authentication_code' ? authenticationCode ?? '' : vatNumber ?? ''
-                  )
+                  saveTextField(key, e.target.value, key === 'utr' ? utr ?? '' : vatNumber ?? '')
                 }
               />
             ) : (
@@ -121,6 +116,8 @@ export function CompanyDetailsEditor({
             {saving === key && <p className="mt-1 text-xs text-ink/40">saving…</p>}
           </div>
         ))}
+
+        <AuthenticationCodeField companyId={companyId} editable={editable} isAdmin={isAdmin} />
 
         <div>
           <label className="field-label" htmlFor="detail-incorporation-date">

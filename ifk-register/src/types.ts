@@ -11,7 +11,6 @@ export interface Company {
   notes: string | null
   created_at: string
   utr: string | null
-  authentication_code: string | null
   vat_number: string | null
   incorporation_date: string | null // ISO date string
 }

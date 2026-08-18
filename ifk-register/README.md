@@ -28,6 +28,12 @@ Every "Due by" date is colour-coded — red within 1 month, amber within 2
 months, green otherwise — both in each company's detail view and on the
 sortable Due dates page.
 
+Authentication Code is restricted to admins only — for viewing, adding,
+amending, and deleting alike — enforced by the database itself, not just
+hidden in the interface. Everyone else sees it marked as restricted.
+Admins manage who has that access from the in-app "Manage access" screen
+(only visible to admins), which appears in the header once you're one.
+
 ---
 
 ## 1. Set up Supabase
@@ -47,8 +53,12 @@ sortable Due dates page.
    **Already have this project set up from before?** Don't re-run
    `schema.sql` — it'll error on policies that already exist. Just run
    whichever incremental migration matches what you're adding instead —
-   `supabase/make-private.sql`, `supabase/add-due-dates.sql`, or
-   `supabase/add-company-details.sql` — see the note at the top of each file.
+   `supabase/make-private.sql`, `supabase/add-due-dates.sql`,
+   `supabase/add-company-details.sql`, or
+   `supabase/add-authentication-code-access-control.sql` — see the note at
+   the top of each file. The last one also needs you to edit its bootstrap
+   line at the bottom with your own email before running it, so you become
+   the first admin — there's no other way in otherwise.
 5. Go to **Project Settings → Data API**. Copy the **Project URL** and the
    **anon public** key — you'll need both in step 3 below. (The anon key is
    safe to put in frontend code; it only grants what the RLS policies you

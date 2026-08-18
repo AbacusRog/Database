@@ -7,8 +7,10 @@ import { RelationshipGraph } from './components/RelationshipGraph'
 import { DueDatesPage } from './components/DueDatesPage'
 import { AddCompanyForm } from './components/AddCompanyForm'
 import { LoginPanel } from './components/LoginPanel'
+import { ManageAccessPage } from './components/ManageAccessPage'
 import { useAuth } from './hooks/useAuth'
 import { useCompanies, matchesSearch } from './hooks/useCompanies'
+import { useIsAdmin } from './hooks/useIsAdmin'
 import { buildPersonIndex } from './lib/relationships'
 
 function SignInGate() {
@@ -31,6 +33,7 @@ function SignInGate() {
 export default function App() {
   const { isAuthenticated, loading: authLoading, signOut } = useAuth()
   const { companies, loading, error, refresh } = useCompanies(isAuthenticated)
+  const { isAdmin } = useIsAdmin(isAuthenticated)
 
   const [search, setSearch] = useState('')
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null)
@@ -38,6 +41,7 @@ export default function App() {
   const [showGraph, setShowGraph] = useState(false)
   const [showDueDates, setShowDueDates] = useState(true)
   const [showAddForm, setShowAddForm] = useState(false)
+  const [showManageAccess, setShowManageAccess] = useState(false)
 
   const filtered = useMemo(
     () => companies.filter((c) => matchesSearch(c, search)),
@@ -76,10 +80,12 @@ export default function App() {
         peopleCount={personIndex.size}
         search={search}
         onSearchChange={setSearch}
+        isAdmin={isAdmin}
         onSignOutClick={signOut}
         onAddCompanyClick={() => setShowAddForm(true)}
         onShowGraphClick={() => setShowGraph(true)}
         onShowDueDatesClick={() => setShowDueDates(true)}
+        onShowManageAccessClick={() => setShowManageAccess(true)}
       />
 
       <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
@@ -124,6 +130,7 @@ export default function App() {
         <CompanyDetail
           company={selectedCompany}
           editable={isAuthenticated}
+          isAdmin={isAdmin}
           onChange={refresh}
           onClose={() => setSelectedCompanyId(null)}
           onDeleted={() => {
@@ -133,6 +140,8 @@ export default function App() {
           onSelectPerson={openPerson}
         />
       )}
+
+      {showManageAccess && <ManageAccessPage onClose={() => setShowManageAccess(false)} />}
 
       {selectedPerson && (
         <PersonDetail

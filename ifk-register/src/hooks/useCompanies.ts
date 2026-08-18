@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabaseClient'
 import type { CompanyWithRoles } from '../types'
 
 const SELECT = `
-  id, name, company_number, notes, created_at, utr, authentication_code, vat_number, incorporation_date,
+  id, name, company_number, notes, created_at, utr, vat_number, incorporation_date,
   directors:company_directors ( id, company_id, person_id, notes, person:people ( id, full_name, notes ) ),
   pscs:company_pscs ( id, company_id, person_id, notes, person:people ( id, full_name, notes ) ),
   shareholders:company_shareholders ( id, company_id, person_id, shares, notes, person:people ( id, full_name, notes ) ),

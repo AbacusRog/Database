@@ -3,10 +3,12 @@ interface Props {
   peopleCount: number
   search: string
   onSearchChange: (value: string) => void
+  isAdmin: boolean
   onSignOutClick: () => void
   onAddCompanyClick: () => void
   onShowGraphClick: () => void
   onShowDueDatesClick: () => void
+  onShowManageAccessClick: () => void
 }
 
 export function Header({
@@ -14,10 +16,12 @@ export function Header({
   peopleCount,
   search,
   onSearchChange,
+  isAdmin,
   onSignOutClick,
   onAddCompanyClick,
   onShowGraphClick,
   onShowDueDatesClick,
+  onShowManageAccessClick,
 }: Props) {
   return (
     <header className="border-b border-rule bg-paper">
@@ -42,6 +46,11 @@ export function Header({
               <button type="button" className="btn-secondary text-xs" onClick={onShowGraphClick}>
                 Relationship map
               </button>
+              {isAdmin && (
+                <button type="button" className="btn-secondary text-xs" onClick={onShowManageAccessClick}>
+                  Manage access
+                </button>
+              )}
               <button type="button" className="btn-secondary text-xs" onClick={onSignOutClick}>
                 Sign out
               </button>

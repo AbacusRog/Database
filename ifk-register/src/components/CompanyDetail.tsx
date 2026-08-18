@@ -9,13 +9,14 @@ import type { CompanyWithRoles } from '../types'
 interface Props {
   company: CompanyWithRoles
   editable: boolean
+  isAdmin: boolean
   onChange: () => void
   onClose: () => void
   onDeleted: () => void
   onSelectPerson: (personId: string) => void
 }
 
-export function CompanyDetail({ company, editable, onChange, onClose, onDeleted, onSelectPerson }: Props) {
+export function CompanyDetail({ company, editable, isAdmin, onChange, onClose, onDeleted, onSelectPerson }: Props) {
   const { people, findOrCreate } = usePeople()
   const [name, setName] = useState(company.name)
   const [number, setNumber] = useState(company.company_number ?? '')
@@ -95,11 +96,11 @@ export function CompanyDetail({ company, editable, onChange, onClose, onDeleted,
           <CompanyDetailsEditor
             companyId={company.id}
             utr={company.utr}
-            authenticationCode={company.authentication_code}
             vatNumber={company.vat_number}
             incorporationDate={company.incorporation_date}
             dueDates={company.due_dates}
             editable={editable}
+            isAdmin={isAdmin}
             onChange={onChange}
           />
         </div>
