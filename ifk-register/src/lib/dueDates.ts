@@ -141,17 +141,20 @@ export const TRAFFIC_LIGHT_DOT_CLASS: Record<TrafficLight, string> = {
 }
 
 export const TRAFFIC_LIGHT_TEXT_CLASS: Record<TrafficLight, string> = {
-  red: 'font-medium text-red-700',
-  amber: 'font-medium text-amber-700',
+  red: 'font-bold text-red-800',
+  amber: 'font-bold text-amber-800',
   green: 'text-ink/60',
 }
 
-/** Full-row background tint for red/amber due-by dates on the Due dates
- *  page — deliberately left empty for green so on-track rows stay plain. */
-export const TRAFFIC_LIGHT_ROW_BG_CLASS: Record<TrafficLight, string> = {
-  red: 'bg-red-100',
-  amber: 'bg-amber-100',
-  green: '',
+/** Strong left-edge stripe + background for red/amber rows on the Due
+ *  dates page — a "flagged" look deliberately bolder than a plain tint, so
+ *  these actually catch the eye in a long list. Every row (including
+ *  green) gets the same border-l-4 so widths never shift; green's is just
+ *  transparent. */
+export const TRAFFIC_LIGHT_ROW_ACCENT_CLASS: Record<TrafficLight, string> = {
+  red: 'border-l-4 border-red-600 bg-red-200/80',
+  amber: 'border-l-4 border-amber-500 bg-amber-200/80',
+  green: 'border-l-4 border-transparent',
 }
 
 export function dueSoonText(days: number): string {

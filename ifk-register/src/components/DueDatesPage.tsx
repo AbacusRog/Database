@@ -9,7 +9,7 @@ import {
   trafficLight,
   TRAFFIC_LIGHT_DOT_CLASS,
   TRAFFIC_LIGHT_TEXT_CLASS,
-  TRAFFIC_LIGHT_ROW_BG_CLASS,
+  TRAFFIC_LIGHT_ROW_ACCENT_CLASS,
   dueSoonText,
 } from '../lib/dueDates'
 
@@ -108,9 +108,9 @@ export function DueDatesPage({ companies, loading, onClose, onSelectCompany }: P
               {sorted.map((row) => {
                 const dueByDays = row.dueByDate ? daysUntil(row.dueByDate) : null
                 const light = row.dueByDate ? trafficLight(row.dueByDate) : null
-                const rowBg = light ? TRAFFIC_LIGHT_ROW_BG_CLASS[light] : ''
+                const rowAccent = light ? TRAFFIC_LIGHT_ROW_ACCENT_CLASS[light] : 'border-l-4 border-transparent'
                 return (
-                  <li key={`${row.companyId}-${row.task}`} className={`ledger-rule ${rowBg}`}>
+                  <li key={`${row.companyId}-${row.task}`} className={`ledger-rule ${rowAccent}`}>
                     <button
                       type="button"
                       onClick={() => onSelectCompany(row.companyId)}
@@ -131,10 +131,9 @@ export function DueDatesPage({ companies, loading, onClose, onSelectCompany }: P
                             <span className={`hidden h-2 w-2 shrink-0 rounded-full sm:inline-block ${TRAFFIC_LIGHT_DOT_CLASS[light]}`} />
                             <span>
                               <span className="block text-ink/50">Due date {formatDate(row.dueDate)}</span>
-                              <span className="flex items-center gap-1.5 text-sm">
+                              <span className={`flex items-center gap-1.5 text-sm ${TRAFFIC_LIGHT_TEXT_CLASS[light]}`}>
                                 <span className={`h-2 w-2 shrink-0 rounded-full sm:hidden ${TRAFFIC_LIGHT_DOT_CLASS[light]}`} />
-                                Due by {formatDate(row.dueByDate)}{' '}
-                                <span className={TRAFFIC_LIGHT_TEXT_CLASS[light]}>({dueSoonText(dueByDays)})</span>
+                                Due by {formatDate(row.dueByDate)} ({dueSoonText(dueByDays)})
                               </span>
                             </span>
                           </>
