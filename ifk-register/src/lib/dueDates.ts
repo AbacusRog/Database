@@ -146,6 +146,14 @@ export const TRAFFIC_LIGHT_TEXT_CLASS: Record<TrafficLight, string> = {
   green: 'text-ink/60',
 }
 
+/** Full-row background tint for red/amber due-by dates on the Due dates
+ *  page — deliberately left empty for green so on-track rows stay plain. */
+export const TRAFFIC_LIGHT_ROW_BG_CLASS: Record<TrafficLight, string> = {
+  red: 'bg-red-100',
+  amber: 'bg-amber-100',
+  green: '',
+}
+
 export function dueSoonText(days: number): string {
   if (days < 0) return `${Math.abs(days)} day${Math.abs(days) === 1 ? '' : 's'} overdue`
   if (days === 0) return 'due today'

@@ -9,6 +9,7 @@ import {
   trafficLight,
   TRAFFIC_LIGHT_DOT_CLASS,
   TRAFFIC_LIGHT_TEXT_CLASS,
+  TRAFFIC_LIGHT_ROW_BG_CLASS,
   dueSoonText,
 } from '../lib/dueDates'
 
@@ -91,7 +92,7 @@ export function DueDatesPage({ companies, loading, onClose, onSelectCompany }: P
             <span className="h-2 w-2 rounded-full bg-amber-500" /> Due within 2 months
           </li>
           <li className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-green-600" /> Everything else
+            <span className="h-2 w-2 rounded-full bg-green-600" /> More than 2 months
           </li>
         </ul>
       </div>
@@ -107,12 +108,13 @@ export function DueDatesPage({ companies, loading, onClose, onSelectCompany }: P
               {sorted.map((row) => {
                 const dueByDays = row.dueByDate ? daysUntil(row.dueByDate) : null
                 const light = row.dueByDate ? trafficLight(row.dueByDate) : null
+                const rowBg = light ? TRAFFIC_LIGHT_ROW_BG_CLASS[light] : ''
                 return (
-                  <li key={`${row.companyId}-${row.task}`} className="ledger-rule">
+                  <li key={`${row.companyId}-${row.task}`} className={`ledger-rule ${rowBg}`}>
                     <button
                       type="button"
                       onClick={() => onSelectCompany(row.companyId)}
-                      className="flex w-full flex-col gap-1.5 px-2 py-3 text-left transition-colors hover:bg-ledger/[0.03] sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+                      className="flex w-full flex-col gap-1.5 px-2 py-3 text-left transition-colors hover:bg-ledger/[0.06] sm:flex-row sm:items-center sm:justify-between sm:gap-4"
                     >
                       <span className="flex min-w-0 items-center gap-2">
                         <span className={`h-2 w-2 shrink-0 rounded-full ${TASK_DOT[row.task]}`} />
