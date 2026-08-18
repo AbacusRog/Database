@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import {
   TASK_ORDER,
@@ -9,7 +9,9 @@ import {
   computeDueBy,
   daysUntil,
   formatDate,
-  dueSoonClass,
+  trafficLight,
+  TRAFFIC_LIGHT_DOT_CLASS,
+  TRAFFIC_LIGHT_TEXT_CLASS,
   dueSoonText,
 } from '../lib/dueDates'
 import type { CompanyDueDate, DueDateTask } from '../types'
@@ -30,6 +32,20 @@ export function DueDatesEditor({ companyId, dueDates, editable, onChange }: Prop
     return initial
   })
   const [saving, setSaving] = useState<DueDateTask | null>(null)
+
+  // Keeps the fields in sync when dueDates changes from outside a direct
+  // edit here — most notably the Year-End auto-fill triggered by entering
+  // an Incorporation Date, which needs to show up without reopening this
+  // panel.
+  useEffect(() => {
+    setValues(() => {
+      const updated = {} as Record<DueDateTask, string>
+      for (const task of TASK_ORDER) {
+        updated[task] = dueDates.find((d) => d.task_type === task)?.due_date ?? ''
+      }
+      return updated
+    })
+  }, [dueDates])
 
   async function save(task: DueDateTask, value: string) {
     const existing = dueDates.find((d) => d.task_type === task)
@@ -59,6 +75,7 @@ export function DueDatesEditor({ companyId, dueDates, editable, onChange }: Prop
           const dueDate = anchor ? parseDueDate(anchor) : null
           const dueBy = dueDate ? computeDueBy(task, dueDate) : null
           const dueByDays = dueBy ? daysUntil(dueBy) : null
+          const light = dueBy ? trafficLight(dueBy) : null
           return (
             <div key={task}>
               <label className="field-label" htmlFor={`due-${task}`}>
@@ -76,12 +93,13 @@ export function DueDatesEditor({ companyId, dueDates, editable, onChange }: Prop
                   onBlur={(e) => save(task, e.target.value)}
                   className="field-input"
                 />
-              ) : dueDate && dueBy && dueByDays !== null ? (
+              ) : dueDate && dueBy && dueByDays !== null && light ? (
                 <div className="text-sm text-ink">
                   <p className="text-ink/60">Due date: {formatDate(dueDate)}</p>
-                  <p>
+                  <p className="flex items-center gap-1.5">
+                    <span className={`h-2 w-2 shrink-0 rounded-full ${TRAFFIC_LIGHT_DOT_CLASS[light]}`} />
                     Due by: {formatDate(dueBy)}{' '}
-                    <span className={`text-xs ${dueSoonClass(dueByDays)}`}>({dueSoonText(dueByDays)})</span>
+                    <span className={`text-xs ${TRAFFIC_LIGHT_TEXT_CLASS[light]}`}>({dueSoonText(dueByDays)})</span>
                   </p>
                 </div>
               ) : (
@@ -89,11 +107,12 @@ export function DueDatesEditor({ companyId, dueDates, editable, onChange }: Prop
               )}
 
               {editable && saving === task && <p className="mt-1 text-xs text-ink/40">saving…</p>}
-              {editable && saving !== task && dueDate && dueBy && dueByDays !== null && (
+              {editable && saving !== task && dueDate && dueBy && dueByDays !== null && light && (
                 <div className="mt-1 text-xs text-ink/50">
                   <p>Due date: {formatDate(dueDate)}</p>
-                  <p>
-                    Due by: {formatDate(dueBy)} <span className={dueSoonClass(dueByDays)}>({dueSoonText(dueByDays)})</span>
+                  <p className="flex items-center gap-1.5">
+                    <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${TRAFFIC_LIGHT_DOT_CLASS[light]}`} />
+                    Due by: {formatDate(dueBy)} <span className={TRAFFIC_LIGHT_TEXT_CLASS[light]}>({dueSoonText(dueByDays)})</span>
                   </p>
                 </div>
               )}

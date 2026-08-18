@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabaseClient'
 import { usePeople } from '../hooks/usePeople'
 import { RoleEditor } from './RoleEditor'
 import { DueDatesEditor } from './DueDatesEditor'
+import { CompanyDetailsEditor } from './CompanyDetailsEditor'
 import type { CompanyWithRoles } from '../types'
 
 interface Props {
@@ -88,6 +89,19 @@ export function CompanyDetail({ company, editable, onChange, onClose, onDeleted,
           >
             ×
           </button>
+        </div>
+
+        <div className="border-t border-rule px-4 py-5 sm:px-6 sm:py-6">
+          <CompanyDetailsEditor
+            companyId={company.id}
+            utr={company.utr}
+            authenticationCode={company.authentication_code}
+            vatNumber={company.vat_number}
+            incorporationDate={company.incorporation_date}
+            dueDates={company.due_dates}
+            editable={editable}
+            onChange={onChange}
+          />
         </div>
 
         <div className="grid gap-5 px-4 py-5 sm:grid-cols-3 sm:gap-6 sm:px-6 sm:py-6">

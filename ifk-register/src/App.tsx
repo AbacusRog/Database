@@ -36,7 +36,7 @@ export default function App() {
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null)
   const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null)
   const [showGraph, setShowGraph] = useState(false)
-  const [showDueDates, setShowDueDates] = useState(false)
+  const [showDueDates, setShowDueDates] = useState(true)
   const [showAddForm, setShowAddForm] = useState(false)
 
   const filtered = useMemo(
@@ -111,6 +111,7 @@ export default function App() {
       {showDueDates && (
         <DueDatesPage
           companies={companies}
+          loading={loading}
           onClose={() => setShowDueDates(false)}
           onSelectCompany={(id) => {
             setShowDueDates(false)

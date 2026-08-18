@@ -10,14 +10,23 @@ persons with significant control (PSC), and shareholders. Built with:
 
 Sign-in is required for everything — no company, director, PSC, or
 shareholder data is visible until you log in. Once signed in, that same
-account can also add, edit, and delete.
+account can also add, edit, and delete. The app opens straight into the
+**Due dates** page.
 
-Each company also tracks three recurring compliance dates — Year-End,
-Confirmation Statement, and VAT Return — set once each and shown on a
-sortable "Due dates" page (sort by date, company, or task). You enter a
-date once; the app works out the next occurrence itself (annually for
-Year-End and Confirmation Statement, quarterly for VAT Return), so nothing
-needs re-entering as each deadline passes.
+Each company also tracks reference details (UTR, Authentication Code, VAT
+Number, Incorporation Date) and three compliance dates — Year-End,
+Confirmation Statement, and VAT Return. Each date is entered once as a
+plain "Due date"; the app computes the actual statutory filing deadline
+("Due by") from it — 9 months after for Year-End, 14 days after for
+Confirmation Statement, 1 month + 7 days after for VAT Return. Nothing
+auto-advances: when a cycle passes, whoever maintains the register updates
+the Due date field by hand for the next one. The one exception is a
+newly-incorporated company's first Year-End, which the app calculates
+automatically from its Incorporation Date (see "First Year-End" below).
+
+Every "Due by" date is colour-coded — red within 1 month, amber within 2
+months, green otherwise — both in each company's detail view and on the
+sortable Due dates page.
 
 ---
 
@@ -37,8 +46,9 @@ needs re-entering as each deadline passes.
 
    **Already have this project set up from before?** Don't re-run
    `schema.sql` — it'll error on policies that already exist. Just run
-   `supabase/make-private.sql` and/or `supabase/add-due-dates.sql` instead,
-   whichever features you're adding — see the note at the top of each file.
+   whichever incremental migration matches what you're adding instead —
+   `supabase/make-private.sql`, `supabase/add-due-dates.sql`, or
+   `supabase/add-company-details.sql` — see the note at the top of each file.
 5. Go to **Project Settings → Data API**. Copy the **Project URL** and the
    **anon public** key — you'll need both in step 3 below. (The anon key is
    safe to put in frontend code; it only grants what the RLS policies you
@@ -158,15 +168,27 @@ removes that link, not the person record itself — so their history on other
 companies is untouched. There's no in-app "delete this person everywhere"
 action by design; do that from the Supabase Table Editor if you ever need it.
 
-Due dates work the same way regardless of when you look: each is stored as
-a single anchor date (`supabase/schema.sql` → `company_due_dates`), and the
-app rolls it forward by the task's recurrence — 12 months for Year-End and
-Confirmation Statement, 3 months for VAT Return — until it lands on today
-or later. That means you never have to re-enter a date after a deadline
-passes; the "next due" date just advances on its own the next time anyone
-loads the page. If you ever need to see the date exactly as entered rather
-than the computed next occurrence, it's the raw `due_date` column in that
-table.
+Due dates are stored as a single "Due date" per (company, task) in
+`company_due_dates` — exactly what was typed in, never auto-advanced. The
+"Due by" shown everywhere is computed from that value on the fly (9 months
+after for Year-End, 14 days after for Confirmation Statement, 1 month + 7
+days after for VAT Return); it isn't stored anywhere. When a deadline
+passes, update the Due date field by hand for the next cycle — Year-End
+and Confirmation Statement typically annually, VAT Return quarterly.
+
+The one automatic exception: saving a company's Incorporation Date (in
+"Company details") auto-calculates its first Year-End — the last day of
+the month containing the first anniversary of incorporation, e.g.
+incorporated 18 Aug 2026 → first Year-End 31 Aug 2027 — but only if no
+Year-End has been entered yet, and only for companies incorporated after
+31 Aug 2025. It's a one-time starting suggestion, not something that
+recalculates later; it never overwrites a Year-End someone has already
+entered.
+
+The red/amber/green colouring on "Due by" dates is based on calendar
+months, not a fixed day count — "due within 1 month" means the same thing
+whether that month is 28 or 31 days long. See `trafficLight()` in
+`src/lib/dueDates.ts` if you ever need to adjust the thresholds.
 
 ## If search or the relationship map ever comes back empty
 

@@ -28,6 +28,10 @@ create table if not exists companies (
   name text not null,
   company_number text,
   notes text,
+  utr text,
+  authentication_code text,
+  vat_number text,
+  incorporation_date date,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

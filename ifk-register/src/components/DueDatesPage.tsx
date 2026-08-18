@@ -6,12 +6,15 @@ import {
   TASK_ORDER,
   formatDate,
   daysUntil,
-  dueSoonClass,
+  trafficLight,
+  TRAFFIC_LIGHT_DOT_CLASS,
+  TRAFFIC_LIGHT_TEXT_CLASS,
   dueSoonText,
 } from '../lib/dueDates'
 
 interface Props {
   companies: CompanyWithRoles[]
+  loading: boolean
   onClose: () => void
   onSelectCompany: (companyId: string) => void
 }
@@ -24,7 +27,7 @@ const TASK_DOT: Record<DueDateTask, string> = {
   vat_return: 'bg-steel',
 }
 
-export function DueDatesPage({ companies, onClose, onSelectCompany }: Props) {
+export function DueDatesPage({ companies, loading, onClose, onSelectCompany }: Props) {
   const [sortMode, setSortMode] = useState<SortMode>('dueBy')
 
   const rows = useMemo(() => buildUpcomingDueDates(companies), [companies])
@@ -62,32 +65,48 @@ export function DueDatesPage({ companies, onClose, onSelectCompany }: Props) {
         </button>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 border-b border-rule px-4 py-3 sm:px-6">
-        <span className="text-xs uppercase tracking-wide text-ink/40">Sort by</span>
-        {(['dueBy', 'company', 'task'] as SortMode[]).map((mode) => (
-          <button
-            key={mode}
-            type="button"
-            onClick={() => setSortMode(mode)}
-            className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
-              sortMode === mode
-                ? 'border-ledger bg-ledger text-paper'
-                : 'border-ink/20 text-ink/60 hover:border-ink/40'
-            }`}
-          >
-            {mode === 'dueBy' ? 'Due by' : mode === 'company' ? 'Company' : 'Task'}
-          </button>
-        ))}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-rule px-4 py-3 sm:px-6">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs uppercase tracking-wide text-ink/40">Sort by</span>
+          {(['dueBy', 'company', 'task'] as SortMode[]).map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              onClick={() => setSortMode(mode)}
+              className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
+                sortMode === mode
+                  ? 'border-ledger bg-ledger text-paper'
+                  : 'border-ink/20 text-ink/60 hover:border-ink/40'
+              }`}
+            >
+              {mode === 'dueBy' ? 'Due by' : mode === 'company' ? 'Company' : 'Task'}
+            </button>
+          ))}
+        </div>
+        <ul className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink/60">
+          <li className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-red-600" /> Due within 1 month
+          </li>
+          <li className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-amber-500" /> Due within 2 months
+          </li>
+          <li className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-green-600" /> Everything else
+          </li>
+        </ul>
       </div>
 
       <div className="flex-1 overflow-auto">
         <div className="mx-auto max-w-3xl px-4 py-4 sm:px-6">
-          {sorted.length === 0 ? (
+          {loading ? (
+            <p className="py-16 text-center text-sm text-ink/50">Loading due dates…</p>
+          ) : sorted.length === 0 ? (
             <p className="py-16 text-center text-sm text-ink/50">No companies yet.</p>
           ) : (
             <ol className="border-t border-rule">
               {sorted.map((row) => {
                 const dueByDays = row.dueByDate ? daysUntil(row.dueByDate) : null
+                const light = row.dueByDate ? trafficLight(row.dueByDate) : null
                 return (
                   <li key={`${row.companyId}-${row.task}`} className="ledger-rule">
                     <button
@@ -104,13 +123,17 @@ export function DueDatesPage({ companies, onClose, onSelectCompany }: Props) {
                           {row.companyName}
                         </span>
                       </span>
-                      <span className="pl-4 text-right text-xs sm:shrink-0 sm:pl-0">
-                        {row.dueDate && row.dueByDate && dueByDays !== null ? (
+                      <span className="flex items-center gap-2 pl-4 text-right text-xs sm:shrink-0 sm:pl-0">
+                        {row.dueDate && row.dueByDate && dueByDays !== null && light ? (
                           <>
-                            <span className="block text-ink/50">Due date {formatDate(row.dueDate)}</span>
-                            <span className="block text-sm">
-                              Due by {formatDate(row.dueByDate)}{' '}
-                              <span className={dueSoonClass(dueByDays)}>({dueSoonText(dueByDays)})</span>
+                            <span className={`hidden h-2 w-2 shrink-0 rounded-full sm:inline-block ${TRAFFIC_LIGHT_DOT_CLASS[light]}`} />
+                            <span>
+                              <span className="block text-ink/50">Due date {formatDate(row.dueDate)}</span>
+                              <span className="flex items-center gap-1.5 text-sm">
+                                <span className={`h-2 w-2 shrink-0 rounded-full sm:hidden ${TRAFFIC_LIGHT_DOT_CLASS[light]}`} />
+                                Due by {formatDate(row.dueByDate)}{' '}
+                                <span className={TRAFFIC_LIGHT_TEXT_CLASS[light]}>({dueSoonText(dueByDays)})</span>
+                              </span>
                             </span>
                           </>
                         ) : (

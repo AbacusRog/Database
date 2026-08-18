@@ -91,14 +91,59 @@ export function formatDateIso(iso: string): string {
   return formatDate(parseDateOnly(iso))
 }
 
-/** Styling and wording for how urgently a "due by" date should read —
- *  shared so the company detail view and the due dates page always agree,
- *  and so a date that's already passed reads as "overdue" rather than a
- *  confusing negative day count. */
-export function dueSoonClass(days: number): string {
-  if (days <= 14) return 'font-medium text-redact'
-  if (days <= 30) return 'font-medium text-brass'
-  return ''
+/** Converts a computed Date back into a "YYYY-MM-DD" string using its local
+ *  calendar fields — never via toISOString(), which converts through UTC
+ *  and can shift the date by a day depending on the browser's timezone. */
+export function formatIsoDate(date: Date): string {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+/** Companies incorporated on or before this date are past their first
+ *  accounting period, so the special first-year-end rule below no longer
+ *  applies to them — their Year-End just recurs normally, entered by hand
+ *  each cycle like any other due date. */
+export const FIRST_YEAR_END_RULE_CUTOFF = new Date(2025, 7, 31)
+
+/** A company's first Accounting Reference Date is the last day of the
+ *  month containing the first anniversary of incorporation — not simply
+ *  "12 months later". Example: incorporated 18 Aug 2026 → first
+ *  anniversary 18 Aug 2027 → first year-end 31 Aug 2027. */
+export function computeFirstYearEnd(incorporationDate: Date): Date {
+  const anniversary = new Date(
+    incorporationDate.getFullYear() + 1,
+    incorporationDate.getMonth(),
+    incorporationDate.getDate()
+  )
+  return new Date(anniversary.getFullYear(), anniversary.getMonth() + 1, 0)
+}
+
+export type TrafficLight = 'red' | 'amber' | 'green'
+
+/** Red/amber/green by calendar-month distance to the due-by date, not a
+ *  flat day count — "due in one month" should mean the same thing whether
+ *  that month is 28 or 31 days long. */
+export function trafficLight(dueBy: Date, from: Date = startOfToday()): TrafficLight {
+  if (dueBy <= addMonthsClamped(from, 1)) return 'red'
+  if (dueBy <= addMonthsClamped(from, 2)) return 'amber'
+  return 'green'
+}
+
+/** Deliberately distinct from the ledger/brass/steel palette used for
+ *  director/PSC/shareholder role dots elsewhere, so the two colour
+ *  systems never get confused on the same row. */
+export const TRAFFIC_LIGHT_DOT_CLASS: Record<TrafficLight, string> = {
+  red: 'bg-red-600',
+  amber: 'bg-amber-500',
+  green: 'bg-green-600',
+}
+
+export const TRAFFIC_LIGHT_TEXT_CLASS: Record<TrafficLight, string> = {
+  red: 'font-medium text-red-700',
+  amber: 'font-medium text-amber-700',
+  green: 'text-ink/60',
 }
 
 export function dueSoonText(days: number): string {
