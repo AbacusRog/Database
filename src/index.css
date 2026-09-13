@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  ::selection {
+    background-color: #B08D4533;
+  }
+  :focus-visible {
+    outline: 2px solid #B08D45;
+    outline-offset: 2px;
+  }
+  /* iOS Safari auto-zooms the page when a focused input's font-size is
+     under 16px. That zoom-and-snap-back is jarring on a form people will
+     use mostly on phones, so every text input stays at 16px on small
+     screens regardless of its visual size elsewhere. */
+  @media (max-width: 640px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
+  }
+}
+
+@layer components {
+  .ledger-rule {
+    border-bottom: 1px solid theme('colors.rule');
+  }
+  .seal {
+    @apply inline-flex items-center justify-center rounded-full border font-mono text-xs tracking-wide;
+    border-color: theme('colors.brass.DEFAULT');
+    color: theme('colors.brass.DEFAULT');
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-sm px-4 py-2.5 text-sm font-medium transition-colors duration-150;
+  }
+  .btn-primary {
+    @apply btn bg-ledger text-paper hover:bg-ledger-light;
+  }
+  .btn-secondary {
+    @apply btn border border-ink/20 text-ink hover:border-ink/40 bg-transparent;
+  }
+  .btn-danger {
+    @apply btn text-redact hover:bg-redact/10;
+  }
+  .close-btn {
+    @apply -m-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xl leading-none text-ink/50 hover:bg-ink/5 hover:text-ink;
+  }
+  .field-label {
+    @apply block text-xs uppercase tracking-wide text-ink/60 mb-1;
+  }
+  .field-input {
+    @apply w-full rounded-sm border border-ink/20 bg-white/60 px-3 py-2.5 text-sm text-ink placeholder:text-ink/40 focus:border-brass;
+  }
+}
