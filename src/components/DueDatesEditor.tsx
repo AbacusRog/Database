@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import {
   TASK_ORDER,
@@ -8,15 +8,17 @@ import {
   parseDueDate,
   computeDueBy,
   computeNextCycle,
-  formatIsoDate,
   daysUntil,
   formatDate,
+  formatDateIso,
+  formatTimestamp,
   trafficLight,
   TRAFFIC_LIGHT_DOT_CLASS,
   TRAFFIC_LIGHT_TEXT_CLASS,
   dueSoonText,
 } from '../lib/dueDates'
-import type { CompanyDueDate, DueDateTask } from '../types'
+import { markTaskCompleted, undoCompletion } from '../lib/completionActions'
+import type { CompanyDueDate, DueDateCompletion, DueDateTask } from '../types'
 
 interface Props {
   companyId: string
@@ -35,6 +37,24 @@ export function DueDatesEditor({ companyId, dueDates, editable, onChange }: Prop
   })
   const [saving, setSaving] = useState<DueDateTask | null>(null)
   const [confirmingComplete, setConfirmingComplete] = useState<DueDateTask | null>(null)
+  const [completions, setCompletions] = useState<DueDateCompletion[]>([])
+  const [expandedHistory, setExpandedHistory] = useState<Record<DueDateTask, boolean>>(
+    {} as Record<DueDateTask, boolean>
+  )
+
+  const refreshCompletions = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('company_due_date_completions')
+      .select('*')
+      .eq('company_id', companyId)
+      .order('completed_at', { ascending: false })
+    if (error) console.error(error)
+    setCompletions((data ?? []) as DueDateCompletion[])
+  }, [companyId])
+
+  useEffect(() => {
+    refreshCompletions()
+  }, [refreshCompletions])
 
   // Keeps the fields in sync when dueDates changes from outside a direct
   // edit here — most notably the Year-End auto-fill triggered by entering
@@ -70,21 +90,29 @@ export function DueDatesEditor({ companyId, dueDates, editable, onChange }: Prop
   }
 
   // Explicit, user-triggered advance to the next cycle — never automatic.
-  // The current due date is only ever replaced when someone confirms it's
-  // actually been done.
   async function markCompleted(task: DueDateTask, currentDueDateIso: string) {
     setSaving(task)
-    const nextDate = computeNextCycle(task, parseDueDate(currentDueDateIso))
-    const { error } = await supabase
-      .from('company_due_dates')
-      .upsert(
-        { company_id: companyId, task_type: task, due_date: formatIsoDate(nextDate) },
-        { onConflict: 'company_id,task_type' }
-      )
-    if (error) console.error(error)
-    onChange()
+    try {
+      await markTaskCompleted(companyId, task, currentDueDateIso)
+      await refreshCompletions()
+      onChange()
+    } catch (err) {
+      console.error(err)
+    }
     setSaving(null)
     setConfirmingComplete(null)
+  }
+
+  async function undo(completion: DueDateCompletion) {
+    setSaving(completion.task_type)
+    try {
+      await undoCompletion(completion)
+      await refreshCompletions()
+      onChange()
+    } catch (err) {
+      console.error(err)
+    }
+    setSaving(null)
   }
 
   return (
@@ -99,6 +127,10 @@ export function DueDatesEditor({ companyId, dueDates, editable, onChange }: Prop
           const light = dueBy ? trafficLight(dueBy) : null
           const nextCycleDate = dueDate ? computeNextCycle(task, dueDate) : null
           const isConfirming = confirmingComplete === task
+          const taskCompletions = completions.filter((c) => c.task_type === task)
+          const latestActive = taskCompletions.find((c) => !c.undone_at)
+          const isExpanded = !!expandedHistory[task]
+
           return (
             <div key={task}>
               <label className="field-label" htmlFor={`due-${task}`}>
@@ -170,6 +202,48 @@ export function DueDatesEditor({ companyId, dueDates, editable, onChange }: Prop
                     >
                       Mark completed →
                     </button>
+                  )}
+                </div>
+              )}
+
+              {taskCompletions.length > 0 && (
+                <div className="mt-2 border-t border-rule/60 pt-2">
+                  {latestActive && (
+                    <p className="text-[11px] text-ink/50">
+                      Last completed {formatTimestamp(latestActive.completed_at)}
+                      {latestActive.completed_by_email ? ` by ${latestActive.completed_by_email}` : ''}
+                      {editable && (
+                        <>
+                          {' — '}
+                          <button
+                            type="button"
+                            className="text-ledger hover:underline"
+                            onClick={() => undo(latestActive)}
+                            disabled={saving === task}
+                          >
+                            Undo
+                          </button>
+                        </>
+                      )}
+                    </p>
+                  )}
+                  <button
+                    type="button"
+                    className="mt-1 text-[11px] text-ink/40 hover:underline"
+                    onClick={() => setExpandedHistory((v) => ({ ...v, [task]: !v[task] }))}
+                  >
+                    {isExpanded ? 'Hide history' : `View history (${taskCompletions.length})`}
+                  </button>
+                  {isExpanded && (
+                    <ul className="mt-1 space-y-1 text-[11px] text-ink/50">
+                      {taskCompletions.map((c) => (
+                        <li key={c.id} className={c.undone_at ? 'italic line-through opacity-60' : ''}>
+                          {formatTimestamp(c.completed_at)}: {formatDateIso(c.previous_due_date)} → {formatDateIso(c.new_due_date)}
+                          {c.completed_by_email ? ` (${c.completed_by_email})` : ''}
+                          {c.undone_at ? ' — undone' : ''}
+                        </li>
+                      ))}
+                    </ul>
                   )}
                 </div>
               )}

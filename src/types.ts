@@ -36,6 +36,18 @@ export interface CompanyDueDate {
   due_date: string // ISO date string, e.g. "2026-03-31"
 }
 
+export interface DueDateCompletion {
+  id: string
+  company_id: string
+  task_type: DueDateTask
+  previous_due_date: string // ISO date string
+  new_due_date: string // ISO date string
+  completed_at: string // ISO timestamp
+  completed_by_email: string | null
+  undone_at: string | null // ISO timestamp, null if still active
+  undone_by_email: string | null
+}
+
 export interface CompanyWithRoles extends Company {
   directors: RoleLink[]
   pscs: RoleLink[]

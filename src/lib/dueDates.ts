@@ -91,6 +91,14 @@ export function formatDateIso(iso: string): string {
   return formatDate(parseDateOnly(iso))
 }
 
+/** For full ISO timestamps (with time and timezone) like completed_at,
+ *  where the native Date constructor's UTC handling is exactly right —
+ *  unlike parseDateOnly, which exists specifically to avoid that for
+ *  plain "YYYY-MM-DD" values with no time component. */
+export function formatTimestamp(iso: string): string {
+  return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(iso))
+}
+
 /** Converts a computed Date back into a "YYYY-MM-DD" string using its local
  *  calendar fields — never via toISOString(), which converts through UTC
  *  and can shift the date by a day depending on the browser's timezone. */

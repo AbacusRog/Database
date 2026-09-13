@@ -57,11 +57,12 @@ Admins manage who has that access from the in-app "Manage access" screen
    `schema.sql` — it'll error on policies that already exist. Just run
    whichever incremental migration matches what you're adding instead —
    `supabase/make-private.sql`, `supabase/add-due-dates.sql`,
-   `supabase/add-company-details.sql`, or
-   `supabase/add-authentication-code-access-control.sql` — see the note at
-   the top of each file. The last one also needs you to edit its bootstrap
-   line at the bottom with your own email before running it, so you become
-   the first admin — there's no other way in otherwise.
+   `supabase/add-company-details.sql`,
+   `supabase/add-authentication-code-access-control.sql`, or
+   `supabase/add-due-date-completions.sql` — see the note at the top of
+   each file. The authentication-code one also needs you to edit its
+   bootstrap line at the bottom with your own email before running it, so
+   you become the first admin — there's no other way in otherwise.
 5. Go to **Project Settings → Data API**. Copy the **Project URL** and the
    **anon public** key — you'll need both in step 3 below. (The anon key is
    safe to put in frontend code; it only grants what the RLS policies you
@@ -190,9 +191,22 @@ anywhere. To move a task to its next cycle, use "Mark completed" — it
 shows the computed next date and only updates the stored Due date once you
 confirm (12 months forward for Year-End and Confirmation Statement, 3
 months for VAT Return, both using the same month-end-clamped arithmetic as
-"Due by" — see `computeNextCycle()` in `src/lib/dueDates.ts`). There's no
-history kept of past cycles; completing a task simply replaces the stored
-Due date with the next one.
+"Due by" — see `computeNextCycle()` in `src/lib/dueDates.ts`).
+
+Every completion is logged in `company_due_date_completions` — who did it,
+when, and what the date changed from/to — visible as "Last completed…" and
+an expandable "View history" under each task in the company's Due dates
+section. "Undo" reverts the due date to what it was immediately before
+that completion and marks the record undone rather than deleting it, so
+the mistake and its correction both stay in the log. Undo only targets the
+most recent still-active completion for that task; undoing it makes the
+one before that (if any) the new most recent, so undoing repeatedly walks
+back through history correctly. On the Due dates page, "Undo" is only
+offered for something completed during that same visit to the page — to
+undo something from an earlier session, do it from the company's own Due
+dates section instead, where the full history lives. Shared logic for
+both is in `src/lib/completionActions.ts`, so completing or undoing a
+task behaves identically no matter where it's triggered from.
 
 The one automatic exception: saving a company's Incorporation Date (in
 "Company details") auto-calculates its first Year-End — the last day of

@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
-import { supabase } from '../lib/supabaseClient'
-import type { CompanyWithRoles, DueDateTask } from '../types'
+import type { CompanyWithRoles, DueDateCompletion, DueDateTask } from '../types'
 import {
   buildUpcomingDueDates,
   TASK_LABEL,
@@ -12,10 +11,9 @@ import {
   TRAFFIC_LIGHT_TEXT_CLASS,
   TRAFFIC_LIGHT_ROW_ACCENT_CLASS,
   dueSoonText,
-  parseDueDate,
   computeNextCycle,
-  formatIsoDate,
 } from '../lib/dueDates'
+import { markTaskCompleted, undoCompletion } from '../lib/completionActions'
 
 interface Props {
   companies: CompanyWithRoles[]
@@ -42,6 +40,11 @@ export function DueDatesPage({ companies, loading, editable, onChange, onClose, 
   const [sortMode, setSortMode] = useState<SortMode>('dueBy')
   const [confirmingKey, setConfirmingKey] = useState<string | null>(null)
   const [savingKey, setSavingKey] = useState<string | null>(null)
+  // Rows completed during this visit to the page, so an "Undo" is right
+  // there without needing to open the company. Resets when the page
+  // closes — undoing something from an earlier session happens from the
+  // company's own Due dates history instead.
+  const [justCompleted, setJustCompleted] = useState<Record<string, DueDateCompletion>>({})
 
   const rows = useMemo(() => buildUpcomingDueDates(companies), [companies])
 
@@ -70,17 +73,31 @@ export function DueDatesPage({ companies, loading, editable, onChange, onClose, 
   async function markCompleted(companyId: string, task: DueDateTask, currentDueDateIso: string) {
     const key = rowKey(companyId, task)
     setSavingKey(key)
-    const nextDate = computeNextCycle(task, parseDueDate(currentDueDateIso))
-    const { error } = await supabase
-      .from('company_due_dates')
-      .upsert(
-        { company_id: companyId, task_type: task, due_date: formatIsoDate(nextDate) },
-        { onConflict: 'company_id,task_type' }
-      )
-    if (error) console.error(error)
-    onChange()
+    try {
+      const { completion } = await markTaskCompleted(companyId, task, currentDueDateIso)
+      setJustCompleted((v) => ({ ...v, [key]: completion }))
+      onChange()
+    } catch (err) {
+      console.error(err)
+    }
     setSavingKey(null)
     setConfirmingKey(null)
+  }
+
+  async function undo(key: string, completion: DueDateCompletion) {
+    setSavingKey(key)
+    try {
+      await undoCompletion(completion)
+      setJustCompleted((v) => {
+        const next = { ...v }
+        delete next[key]
+        return next
+      })
+      onChange()
+    } catch (err) {
+      console.error(err)
+    }
+    setSavingKey(null)
   }
 
   return (
@@ -141,6 +158,7 @@ export function DueDatesPage({ companies, loading, editable, onChange, onClose, 
                 const key = rowKey(row.companyId, row.task)
                 const isConfirming = confirmingKey === key
                 const isSaving = savingKey === key
+                const justCompletedHere = justCompleted[key]
                 const nextCycleDate = row.dueDate ? computeNextCycle(row.task, row.dueDate) : null
                 return (
                   <li key={key} className={`ledger-rule ${rowAccent}`}>
@@ -182,9 +200,20 @@ export function DueDatesPage({ companies, loading, editable, onChange, onClose, 
                           <span className="italic text-ink/40">Not set</span>
                         )}
 
-                        {editable && row.dueDate && !isSaving && (
+                        {editable && !isSaving && (
                           <span onClick={(e) => e.stopPropagation()}>
-                            {isConfirming && nextCycleDate ? (
+                            {justCompletedHere ? (
+                              <span className="flex items-center gap-2 rounded-sm border border-ledger/30 bg-ledger/5 px-2 py-1 text-xs">
+                                <span className="text-ink/70">Completed</span>
+                                <button
+                                  type="button"
+                                  className="font-medium text-ledger hover:underline"
+                                  onClick={() => undo(key, justCompletedHere)}
+                                >
+                                  Undo
+                                </button>
+                              </span>
+                            ) : isConfirming && nextCycleDate ? (
                               <span className="flex items-center gap-2 rounded-sm border border-brass/40 bg-brass/5 px-2 py-1 text-xs">
                                 <span className="text-ink/70">Next: {formatDate(nextCycleDate)}</span>
                                 <button
@@ -202,7 +231,7 @@ export function DueDatesPage({ companies, loading, editable, onChange, onClose, 
                                   Cancel
                                 </button>
                               </span>
-                            ) : (
+                            ) : row.dueDate ? (
                               <button
                                 type="button"
                                 className="shrink-0 rounded-full border border-ledger/30 px-2.5 py-1 text-xs text-ledger hover:bg-ledger/10"
@@ -210,7 +239,7 @@ export function DueDatesPage({ companies, loading, editable, onChange, onClose, 
                               >
                                 Mark completed
                               </button>
-                            )}
+                            ) : null}
                           </span>
                         )}
                         {isSaving && <span className="text-xs text-ink/40">saving…</span>}
